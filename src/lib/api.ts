@@ -9,14 +9,37 @@ export function apiBase() {
   return (saved || configured || '').replace(/\/$/, '');
 }
 
-export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const base = apiBase();
+export function validateApiBase(value: string, appOrigin: string) {
+  const address = new URL(value);
+  const app = new URL(appOrigin);
+  const local = (host: string) => host === 'localhost' || host === '[::1]' || host === '0.0.0.0' || host.startsWith('127.') || host.endsWith('.localhost');
+  if (!['http:', 'https:'].includes(address.protocol) || address.username || address.password || address.search || address.hash) {
+    throw new Error('Enter your hosted Flask service address without credentials or query parameters.');
+  }
+  if (local(address.hostname) && !local(app.hostname)) {
+    throw new Error('This address points to localhost on your own device, not your hosted research service. Enter your deployed Flask HTTPS address in Settings.');
+  }
+  if (app.protocol === 'https:' && address.protocol !== 'https:') {
+    throw new Error('Your research service needs an HTTPS address to connect to this secure workspace.');
+  }
+  if (address.origin === app.origin) {
+    throw new Error('This is the workspace address, not the research service. Enter the separately hosted Flask service address in Settings.');
+  }
+  return address.href.replace(/\/$/, '');
+}
+
+export async function api<T>(path: string, options: RequestInit = {}, candidateBase?: string): Promise<T> {
+  const base = candidateBase ?? apiBase();
   if (!base) throw new Error('Connect your research service in Settings to continue.');
+  const validated = typeof window !== 'undefined' ? validateApiBase(base, window.location.origin) : base;
   let response: Response;
   try {
-    response = await fetch(`${base}${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options.headers }, signal: AbortSignal.timeout(15000) });
+    const headers = new Headers(options.headers);
+    if (options.body) headers.set('Content-Type', 'application/json');
+    response = await fetch(`${validated}${path}`, { ...options, headers, signal: AbortSignal.timeout(path === '/api/health' ? 120000 : 15000) });
   } catch { throw new Error('The research service could not be reached. Check its address and allowed origins in Settings.'); }
   const envelope = await response.json().catch(() => null);
+  if (!envelope || typeof envelope.success !== 'boolean') throw new Error('This address did not return a MeetBrief research response. Enter the Flask service address, not the workspace address.');
   if (!response.ok || !envelope?.success) throw new Error(envelope?.error?.message || `The research service returned an error (${response.status}).`);
   return envelope.data as T;
 }

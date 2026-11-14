@@ -1,5 +1,8 @@
 # MeetBrief AI
 
+- [x] Reject localhost/workspace research addresses and save settings only after a valid health response.
+- [ ] Connect the user's deployed Flask address — not supplied; localhost was configured instead.
+
 - [x] Meeting workspace, meeting form, settings and external Flask structure.
 - [x] Tavily and Bifrost adapters with bounded retries and validated JSON.
 - [x] Initial meeting-relative pipeline, provenance checks and source-backed briefing assembly.

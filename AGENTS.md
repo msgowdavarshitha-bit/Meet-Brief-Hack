@@ -34,3 +34,4 @@ use the editor.
 - Keep research keys and MongoDB access in the external service; the browser receives only its public API base URL.
 - Keep date-window and evidence rules in pure tested modules so views cannot reinterpret research results.
 - Treat the external Flask service as single-workspace and single-worker until authentication and durable jobs exist; browser CORS is not authorization.
+- Validate external service addresses centrally before every request and save candidate settings only after a valid health response; localhost and workspace URLs are not hosted Flask services.
