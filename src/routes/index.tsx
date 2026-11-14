@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { ArrowRight, CalendarDays, CheckCheck, Clock3, FileText, Globe2, Plus, Search, ShieldCheck } from 'lucide-react';
+import { ArrowRight, CalendarDays, CheckCheck, Clock3, FileText, Globe2, Plus, Search, ShieldCheck, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PageHeading, Workspace, pageHead } from '@/components/workspace';
 import { api, apiBase, type Meeting } from '@/lib/api';
