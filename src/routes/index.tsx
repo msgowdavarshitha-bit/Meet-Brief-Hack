@@ -1,23 +1,28 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
+import { ArrowRight, CalendarDays, CheckCheck, Clock3, FileText, Globe2, Plus, Search, ShieldCheck, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PageHeading, Workspace, pageHead } from '@/components/workspace';
+import { api, apiBase, type Meeting } from '@/lib/api';
+import desk from '@/assets/meeting-desk.jpg';
 
-// The home route ships no og:image, so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+export const Route = createFileRoute('/')({ head: () => pageHead('Dashboard', 'Prepare for your next meeting with verified, source-backed intelligence.'), component: Index });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [connected, setConnected] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  useEffect(() => { if (!apiBase()) return; setLoading(true); api<Meeting[]>('/api/meetings').then(data => { setMeetings(data); setConnected(true); }).catch(e => setError(e.message)).finally(() => setLoading(false)); }, []);
+  const upcoming = meetings.filter(m => new Date(m.meeting_datetime).getTime() >= Date.now());
+  const completed = meetings.filter(m => m.briefing_id);
+  return <Workspace title="Dashboard"><PageHeading title="A little preparation. A big advantage." subtitle="Your next great conversation starts here." action={<Button asChild><Link to="/create"><Plus /> New briefing</Link></Button>} />
+    <section className="welcome-cover"><img src={desk} width={1536} height={512} alt="Open notebook and pen ready for a meeting" /><div className="welcome-copy"><div className="eyebrow mb-3 text-primary flex gap-2 items-center"><Sparkles size={12} /> MeetBrief AI</div><h2>Walk into every meeting<br />with the full picture.</h2><p>Know the important things before you enter the room.</p><Button asChild><Link to="/create">Prepare for a meeting <ArrowRight /></Link></Button></div></section>
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 mt-6">{[{ label: 'Total briefings', value: connected ? completed.length : '—', note: 'Your research, in one place', icon: FileText }, { label: 'Upcoming meetings', value: connected ? upcoming.length : '—', note: 'Conversations on the horizon', icon: CalendarDays }, { label: 'Sources verified', value: '—', note: 'Evidence behind every insight', icon: ShieldCheck }, { label: 'Research activity', value: '—', note: 'Live research, clear provenance', icon: Globe2 }].map(s => <div className="stat-card" key={s.label}><div className="flex items-center justify-between"><span className="text-xs text-muted-foreground font-medium">{s.label}</span><span className="stat-icon"><s.icon size={17} /></span></div><div className="text-3xl font-bold mt-2">{s.value}</div><p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">{s.note}</p></div>)}</div>
+    {error && <p className="error-notice mt-5" role="alert">{error}</p>}
+    <div className="grid lg:grid-cols-[1.65fr_1fr] gap-8 mt-8"><section><div className="flex items-center justify-between"><h2 className="section-title">Upcoming meetings</h2><span className="text-xs text-muted-foreground">{connected ? upcoming.length : 0} scheduled</span></div>{loading ? <p className="empty-area text-muted-foreground">Loading meetings…</p> : upcoming.length ? <div className="mt-4 divide-y divide-border">{upcoming.map(m => <div key={m.meeting_id} className="py-4 flex justify-between gap-3"><div><p className="font-bold">{m.name}</p><p className="text-xs text-muted-foreground mt-1">{m.purpose} · {new Date(m.meeting_datetime).toLocaleString()}</p></div>{m.briefing_id && <Button asChild variant="outline" size="sm"><Link to="/briefing/$briefingId" params={{ briefingId: m.briefing_id }}>View briefing</Link></Button>}</div>)}</div> : <div className="empty-area"><span className="empty-icon"><CalendarDays size={24} strokeWidth={1.4} /></span><h3 className="font-bold text-sm">Your next meeting starts here</h3><p className="text-xs text-muted-foreground mt-2">Create a briefing and arrive one step ahead.</p><Button variant="link" asChild className="mt-2 text-xs"><Link to="/create"><Plus /> Prepare your first meeting</Link></Button></div>}</section>
+    <section className="border-l-0 lg:border-l border-border lg:pl-7"><h2 className="section-title">Research connections</h2><div className="mt-4 border-t border-border">{[{ name: 'Tavily', detail: 'Live web research', icon: Search }, { name: 'Bifrost', detail: 'AI analysis gateway', icon: Sparkles }, { name: 'MongoDB', detail: 'Meeting & briefing storage', icon: FileText }].map(item => <div className="py-4 flex items-center gap-3 border-b border-border" key={item.name}><span className="stat-icon"><item.icon size={16} /></span><div className="flex-1"><p className="text-xs font-bold">{item.name}</p><p className="text-[10px] mt-1 text-muted-foreground">{item.detail}</p></div><span className="text-[10px] text-muted-foreground flex gap-1 items-center"><span className="w-1.5 h-1.5 rounded-full bg-muted-foreground" />Not verified</span></div>)}</div><Button variant="link" asChild className="text-xs px-0 mt-1"><Link to="/settings">Manage connections <ArrowRight /></Link></Button></section></div>
+    <section className="mt-8"><div className="flex items-center justify-between"><h2 className="section-title">Recent briefings</h2><Button variant="link" asChild className="text-xs"><Link to="/history">View history <ArrowRight /></Link></Button></div>{completed.length ? completed.slice(0, 3).map(m => <div className="py-4 border-t border-border" key={m.meeting_id}><Link to="/briefing/$briefingId" params={{ briefingId: m.briefing_id || '' }} className="font-semibold text-primary">{m.name}</Link></div>) : <div className="border-t border-border mt-3 py-8 flex items-center gap-5"><span className="empty-icon mb-0"><FileText size={22} strokeWidth={1.4} /></span><div><p className="font-semibold text-sm">A fresh start for better conversations.</p><p className="text-xs text-muted-foreground mt-2">Your completed, source-backed briefings will appear here.</p></div></div>}</section>
+    <footer className="mt-7 pt-5 border-t border-border flex flex-wrap gap-3 items-center justify-between text-[10px] text-muted-foreground"><span className="flex items-center gap-2"><CheckCheck size={14} /> Grounded in sources. Built for your next conversation.</span><span className="flex items-center gap-2"><Clock3 size={12} /> 30-day research window</span></footer>
+  </Workspace>;
 }

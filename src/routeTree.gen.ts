@@ -10,33 +10,102 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CreateRouteImport } from './routes/create'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as BriefingBriefingIdRouteImport } from './routes/briefing.$briefingId'
+import { Route as ResearchRunIdRouteImport } from './routes/research.$runId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CreateRoute = CreateRouteImport.update({
+  id: '/create',
+  path: '/create',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BriefingBriefingIdRoute = BriefingBriefingIdRouteImport.update({
+  id: '/briefing/$briefingId',
+  path: '/briefing/$briefingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResearchRunIdRoute = ResearchRunIdRouteImport.update({
+  id: '/research/$runId',
+  path: '/research/$runId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/history': typeof HistoryRoute
+  '/settings': typeof SettingsRoute
+  '/briefing/$briefingId': typeof BriefingBriefingIdRoute
+  '/research/$runId': typeof ResearchRunIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/history': typeof HistoryRoute
+  '/settings': typeof SettingsRoute
+  '/briefing/$briefingId': typeof BriefingBriefingIdRoute
+  '/research/$runId': typeof ResearchRunIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/create': typeof CreateRoute
+  '/history': typeof HistoryRoute
+  '/settings': typeof SettingsRoute
+  '/briefing/$briefingId': typeof BriefingBriefingIdRoute
+  '/research/$runId': typeof ResearchRunIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/create'
+    | '/history'
+    | '/settings'
+    | '/briefing/$briefingId'
+    | '/research/$runId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/create'
+    | '/history'
+    | '/settings'
+    | '/briefing/$briefingId'
+    | '/research/$runId'
+  id:
+    | '__root__'
+    | '/'
+    | '/create'
+    | '/history'
+    | '/settings'
+    | '/briefing/$briefingId'
+    | '/research/$runId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CreateRoute: typeof CreateRoute
+  HistoryRoute: typeof HistoryRoute
+  SettingsRoute: typeof SettingsRoute
+  BriefingBriefingIdRoute: typeof BriefingBriefingIdRoute
+  ResearchRunIdRoute: typeof ResearchRunIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +117,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/create': {
+      id: '/create'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/briefing/$briefingId': {
+      id: '/briefing/$briefingId'
+      path: '/briefing/$briefingId'
+      fullPath: '/briefing/$briefingId'
+      preLoaderRoute: typeof BriefingBriefingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/research/$runId': {
+      id: '/research/$runId'
+      path: '/research/$runId'
+      fullPath: '/research/$runId'
+      preLoaderRoute: typeof ResearchRunIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CreateRoute: CreateRoute,
+  HistoryRoute: HistoryRoute,
+  SettingsRoute: SettingsRoute,
+  BriefingBriefingIdRoute: BriefingBriefingIdRoute,
+  ResearchRunIdRoute: ResearchRunIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

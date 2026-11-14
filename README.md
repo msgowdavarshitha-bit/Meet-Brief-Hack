@@ -1,29 +1,100 @@
-# Welcome to your Lovable project
+# MeetBrief AI
 
-This project was built with [Lovable](https://lovable.dev).
+Know the Important Things Before You Enter the Room.
 
-## Build with Lovable
+Source-backed pre-meeting intelligence for Global AI Hackathon 2026, Problem Statement 05. No fabricated meetings, research findings or simulated progress.
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+## Architecture
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+React 19 + TypeScript + TanStack Start + Tailwind v4 are hosted here. The Flask service in `backend/` is deployed separately on Render with MongoDB Atlas. Flask cannot run in this frontend host. All live searches use Tavily and all model calls use Bifrost without a direct-provider fallback.
 
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
-npm run dev
+```mermaid
+flowchart LR
+  React[Meeting workspace] --> Flask[External Flask service]
+  Flask --> Mongo[MongoDB Atlas]
+  Flask --> Plan[Bifrost planning]
+  Plan --> Research[Tavily research]
+  Research --> Analysis[Bifrost structured analysis]
+  Analysis --> Verify[Provenance checks]
+  Verify --> Brief[Briefing and one-page PDF]
+  Brief --> Mongo
 ```
 
-## Built with
+## Setup and deployment
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+Frontend: `bun install`, then `bun dev`. Set the public `VITE_API_BASE_URL` in frontend environment settings. Alternatively enter the Flask service address in Settings for this browser session. Private keys must never use the VITE prefix.
+
+External service: install `backend/requirements.txt` in a Python virtual environment. On Render, choose `backend` as the root directory, `pip install -r requirements.txt` as the install command, and `gunicorn --workers 1 --threads 4 --timeout 180 app:app` as the start command. Set environment variables securely in Render, not in committed files. Bifrost must be reachable from Render, not just localhost on your laptop. Configure the provider credentials in Bifrost itself. Secure Bifrost inference endpoints according to the official security guide.
+
+Configure Atlas network access for Render and provide its private URI. Include the actual published frontend and preview origins in CORS_ORIGINS. Browser requests need an HTTPS external service in production. The uploaded configuration was not copied: it is not a recognized dotenv configuration.
+
+## Environment
+
+See `.env.example` and `backend/.env.example` for names without private values.
+
+| Variable | Where | Purpose |
+|---|---|---|
+| VITE_API_BASE_URL | Frontend | Public external service URL |
+| TAVILY_API_KEY | Flask | Tavily search credential |
+| BIFROST_BASE_URL | Flask | Your Bifrost deployment base, optionally ending /v1 |
+| BIFROST_API_KEY | Flask | Inference bearer/virtual key if deployment requires it |
+| BIFROST_MODEL | Flask | Actual provider/model identifier configured in Bifrost |
+| MONGODB_URI | Flask | Private Atlas connection URI |
+| MONGODB_DB | Flask | Database name, default meetbrief |
+| CORS_ORIGINS | Flask | Comma-separated allowed frontend origins |
+| MAX_QUERIES_PER_RUN | Flask | Up to six queries |
+| MAX_RESULTS_PER_QUERY | Flask | Up to ten results |
+| MAX_SOURCES_TO_LLM | Flask | Up to thirty trimmed sources |
+| FLASK_ENV | Flask | Production configuration label |
+
+## Official documentation consulted
+
+- https://docs.tavily.com/documentation/api-reference/endpoint/search
+- https://docs.getbifrost.ai/api-reference/chat-completions/create-a-chat-completion
+- https://docs.getbifrost.ai/deployment-guides/how-to/security-best-practices
+
+Tavily uses POST /search, Bearer auth, news topic, advanced search, meeting-relative start/end dates, published dates and generated answers disabled. Bifrost uses POST /v1/chat/completions, provider/model naming, JSON output, Pydantic schema validation and one repair attempt. Authentication must match your actual Bifrost deployment. No direct-provider fallback exists. Health probes execute actual search and inference calls and MongoDB ping; probes may incur usage costs.
+
+## API
+
+JSON envelope: `{success, data, error: {code, message}}`. PDF returns binary.
+
+- GET /api/health — actual probes or not-configured states
+- GET/POST /api/meetings — latest 100 meetings / validated meeting creation
+- GET /api/meetings/<meeting_id>
+- POST /api/research — meeting_id, immediate run_id, in-process background task
+- GET /api/research/status/<run_id> — persisted stages and actual counters
+- GET /api/research/results/<run_id>
+- GET /api/briefings/<briefing_id>
+- GET /api/briefings/<briefing_id>/pdf
+
+Briefing generation is part of the research pipeline, not a separate generation endpoint. Invalid inputs return 422, missing records 404, rate limits 429, service/storage failures 503. Upstream errors become explicit failed run states, not fake completed briefings.
+
+## Evidence and dates
+
+Window is inclusive `[meeting date − 30 days, min(meeting date, today)]` in the named timezone. November 20, 2026 starts October 21. Past meetings are allowed with warnings; entirely future windows are rejected. Unknown dates never count as recent. Tracking parameters/fragments are removed. Developments require retrieved source IDs and a matching verbatim excerpt of at most 40 words. Failed provenance validation stops publishing. A matching excerpt alone does not prove a paraphrase; model classifications of Supported are conservatively downgraded to Partially Supported.
+
+## Testing
+
+```
+bunx vitest run src/test/meeting.test.ts src/test/app-routing.test.tsx
+PYTHONPATH=backend python -m pytest backend/tests -q
+```
+
+Executed: 7 frontend tests and 11 Python tests passed. Browser checks confirmed dashboard rendering on desktop/mobile, no mobile horizontal overflow, navigation, and a clear error when submitting without a configured service. No browser runtime errors observed. Live Tavily, Bifrost, MongoDB and the full research-to-PDF flow are **NOT YET TESTED**: external deployment URL and credentials are absent. Unit tests do not prove live integration success.
+
+## Known limitations / remaining phases
+
+- Initial vertical slice, not acceptance-complete production software.
+- External service is single-workspace without application authentication. CORS is not authorization: restrict access via a secure reverse proxy before storing private meetings or enabling paid calls publicly.
+- In-process research threads are interrupted by service restarts; production needs durable jobs and stale-run recovery.
+- Independent corroboration, source credibility tiers, conflict comparison and explicit identity-disambiguation handling need further work. Current checks validate provenance, not truth.
+- Searches currently execute sequentially. Stages 3–6 reuse a structured analysis response plus deterministic verification/assembly rather than six independent AI agents.
+- Token/latency metrics, detailed confidence charts and aggregate source/activity dashboard stats are not implemented; unavailable stats show a dash.
+- Unknown-date evidence is retained in sources but excluded from recent developments.
+- PDF fits one page by truncating lower-priority details with a full-details note; full real-data scenarios and citation coverage remain unverified.
+- Process-local rate limiting requires the single-worker deployment described above.
+
+## Demo after deployment
+
+Test connections in Settings. Create a meeting, inspect its date window, follow actual research counters, inspect briefing evidence and uncertainty labels, download PDF and revisit history. Test bad provider credentials to demonstrate failure rather than false success.

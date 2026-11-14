@@ -28,3 +28,9 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Application architecture
+- Host the React workspace with TanStack routing and the Python research service externally; this runtime cannot host Flask.
+- Keep research keys and MongoDB access in the external service; the browser receives only its public API base URL.
+- Keep date-window and evidence rules in pure tested modules so views cannot reinterpret research results.
+- Treat the external Flask service as single-workspace and single-worker until authentication and durable jobs exist; browser CORS is not authorization.
