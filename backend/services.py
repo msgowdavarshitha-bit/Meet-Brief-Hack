@@ -1,12 +1,8 @@
-import json
 import os
-import re
 import time
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 from datetime import datetime, timezone
 import requests
-from models import Analysis, Plan
-from pydantic import ValidationError
 
 
 class IntegrationError(Exception):
@@ -68,29 +64,9 @@ def tavily(query, window, on_attempt=None):
     return request_json('https://api.tavily.com/search', {'Authorization': f'Bearer {key}'}, {'query': query, 'topic': 'news', 'search_depth': 'advanced', 'start_date': window['start'], 'end_date': window['end'], 'max_results': min(10, max(1, int(os.getenv('MAX_RESULTS_PER_QUERY', '5')))), 'include_answer': False, 'include_published_date': True}, 'Tavily', on_attempt)
 
 
-def bifrost(messages, schema, on_attempt=None):
-    base = os.getenv('BIFROST_BASE_URL', '').rstrip('/')
-    model = os.getenv('BIFROST_MODEL')
-    if not base or not model:
-        raise IntegrationError('Bifrost is not configured. Set BIFROST_BASE_URL and BIFROST_MODEL on the external service.')
-    headers = {'Content-Type': 'application/json'}
-    if os.getenv('BIFROST_API_KEY'):
-        headers['Authorization'] = f"Bearer {os.environ['BIFROST_API_KEY']}"
-    endpoint = base + ('/chat/completions' if base.endswith('/v1') else '/v1/chat/completions')
-    prompt = list(messages) + [{'role': 'system', 'content': 'Return only JSON matching this schema: ' + json.dumps(schema.model_json_schema())}]
-    for repair in range(2):
-        response = request_json(endpoint, headers, {'model': model, 'messages': prompt, 'temperature': 0.1, 'max_tokens': 4000, 'response_format': {'type': 'json_object'}}, 'Bifrost', on_attempt)
-        try:
-            return schema.model_validate_json(response['choices'][0]['message']['content'])
-        except (ValidationError, KeyError, IndexError, TypeError):
-            if repair:
-                raise IntegrationError('Bifrost output did not pass the briefing schema after one repair attempt.')
-            prompt.append({'role': 'user', 'content': 'The previous output did not match the schema. Generate a corrected JSON object using only the original evidence.'})
-
-
 def check_integrations():
     statuses = {}
-    # These are actual inference/search probes, not configuration-only success labels.
+    # This is an actual search probe, not a configuration-only success label.
     if not os.getenv('TAVILY_API_KEY'):
         statuses['tavily'] = {'status': 'not configured'}
     else:
@@ -100,12 +76,4 @@ def check_integrations():
             statuses['tavily'] = {'status': 'connected'}
         except IntegrationError:
             statuses['tavily'] = {'status': 'connection failed'}
-    if not os.getenv('BIFROST_BASE_URL') or not os.getenv('BIFROST_MODEL'):
-        statuses['bifrost'] = {'status': 'not configured'}
-    else:
-        try:
-            bifrost([{'role': 'user', 'content': 'Return a JSON queries array containing the string connectivity check.'}], Plan)
-            statuses['bifrost'] = {'status': 'connected'}
-        except IntegrationError:
-            statuses['bifrost'] = {'status': 'connection failed'}
     return statuses

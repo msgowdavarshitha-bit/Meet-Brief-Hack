@@ -4,7 +4,7 @@
 - [ ] Connect the user's deployed Flask address — not supplied; localhost was configured instead.
 
 - [x] Meeting workspace, meeting form, settings and external Flask structure.
-- [x] Tavily and Bifrost adapters with bounded retries and validated JSON.
+- [x] Tavily adapter with bounded retries; deterministic planning and extractive, tested analysis rules (no AI model dependency).
 - [x] Initial meeting-relative pipeline, provenance checks and source-backed briefing assembly.
 - [x] Progress, results, history, MongoDB persistence adapters and one-page PDF implementation.
 - [x] Automated rules tests and desktop/mobile workspace checks (18 tests passed).

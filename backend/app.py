@@ -133,7 +133,7 @@ def research():
     store.research_runs.create_index('meeting_id')
     store.briefings.create_index('briefing_id', unique=True)
     store.research_results.create_index('run_id', unique=True)
-    run = {'run_id': run_id, 'meeting_id': model.meeting_id, 'status': 'pending', 'stages': [{'name': name, 'status': 'pending'} for name in STAGES], 'counters': {'tavily_queries': 0, 'sources_retrieved': 0, 'sources_deduped': 0, 'bifrost_calls': 0}, 'started_at': datetime.now(timezone.utc).isoformat()}
+    run = {'run_id': run_id, 'meeting_id': model.meeting_id, 'status': 'pending', 'stages': [{'name': name, 'status': 'pending'} for name in STAGES], 'counters': {'tavily_queries': 0, 'sources_retrieved': 0, 'sources_deduped': 0}, 'started_at': datetime.now(timezone.utc).isoformat()}
     store.research_runs.insert_one(run)
     executor.submit(run_research, store, meeting, run_id)
     return ok({'run_id': run_id}, 202)

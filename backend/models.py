@@ -61,19 +61,3 @@ class Question(BaseModel):
     rationale: str = Field(min_length=1, max_length=300)
 
 
-class Recommendation(BaseModel):
-    text: str = Field(min_length=1, max_length=500)
-    source_ids: list[int] = Field(min_length=1, max_length=5)
-
-
-class Analysis(BaseModel):
-    executive_summary: str = Field(max_length=1300)
-    background: list[Development] = Field(max_length=4)
-    recent_developments: list[Development] = Field(max_length=6)
-    opportunities: list[Recommendation] = Field(max_length=3)
-    risks: list[Recommendation] = Field(max_length=3)
-    questions: list[Question] = Field(min_length=5, max_length=10)
-
-
-class Plan(BaseModel):
-    queries: list[str] = Field(min_length=1, max_length=6)

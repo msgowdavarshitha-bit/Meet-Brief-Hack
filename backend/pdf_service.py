@@ -48,7 +48,7 @@ def create_pdf(brief):
             if not write(f'<link href="{escape(url, quote=True)}">{escape(text)}</link>', trusted_markup=True):
                 break
     pdf.setFont('Helvetica', 8)
-    footer = 'Full details in app. Content prioritized to fit one page.' if truncated else 'Source-backed research · Bifrost analysis · Automated findings require judgment.'
+    footer = 'Full details in app. Content prioritized to fit one page.' if truncated else 'Source-backed research · Extractive findings require judgment.'
     pdf.drawString(38, 30, footer)
     pdf.showPage()
     pdf.save()
