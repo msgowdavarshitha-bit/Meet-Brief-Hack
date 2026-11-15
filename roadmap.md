@@ -1,5 +1,8 @@
 # MeetBrief AI
 
+- [x] Clarify local versus hosted research setup and hackathon readiness in Settings.
+- [x] Add screenshot upload, AI page generation, isolated preview and code download; live AI generation and HTML download passed.
+
 - [x] Reject localhost/workspace research addresses and save settings only after a valid health response.
 - [ ] Connect the user's deployed Flask address — not supplied; localhost was configured instead.
 

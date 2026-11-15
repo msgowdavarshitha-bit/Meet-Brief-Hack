@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as ScreenshotRouteImport } from './routes/screenshot'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as BriefingBriefingIdRouteImport } from './routes/briefing.$briefingId'
 import { Route as ResearchRunIdRouteImport } from './routes/research.$runId'
@@ -29,6 +30,11 @@ const CreateRoute = CreateRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScreenshotRoute = ScreenshotRouteImport.update({
+  id: '/screenshot',
+  path: '/screenshot',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/history': typeof HistoryRoute
+  '/screenshot': typeof ScreenshotRoute
   '/settings': typeof SettingsRoute
   '/briefing/$briefingId': typeof BriefingBriefingIdRoute
   '/research/$runId': typeof ResearchRunIdRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/history': typeof HistoryRoute
+  '/screenshot': typeof ScreenshotRoute
   '/settings': typeof SettingsRoute
   '/briefing/$briefingId': typeof BriefingBriefingIdRoute
   '/research/$runId': typeof ResearchRunIdRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/history': typeof HistoryRoute
+  '/screenshot': typeof ScreenshotRoute
   '/settings': typeof SettingsRoute
   '/briefing/$briefingId': typeof BriefingBriefingIdRoute
   '/research/$runId': typeof ResearchRunIdRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/history'
+    | '/screenshot'
     | '/settings'
     | '/briefing/$briefingId'
     | '/research/$runId'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/history'
+    | '/screenshot'
     | '/settings'
     | '/briefing/$briefingId'
     | '/research/$runId'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/create'
     | '/history'
+    | '/screenshot'
     | '/settings'
     | '/briefing/$briefingId'
     | '/research/$runId'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CreateRoute: typeof CreateRoute
   HistoryRoute: typeof HistoryRoute
+  ScreenshotRoute: typeof ScreenshotRoute
   SettingsRoute: typeof SettingsRoute
   BriefingBriefingIdRoute: typeof BriefingBriefingIdRoute
   ResearchRunIdRoute: typeof ResearchRunIdRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/screenshot': {
+      id: '/screenshot'
+      path: '/screenshot'
+      fullPath: '/screenshot'
+      preLoaderRoute: typeof ScreenshotRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CreateRoute: CreateRoute,
   HistoryRoute: HistoryRoute,
+  ScreenshotRoute: ScreenshotRoute,
   SettingsRoute: SettingsRoute,
   BriefingBriefingIdRoute: BriefingBriefingIdRoute,
   ResearchRunIdRoute: ResearchRunIdRoute,

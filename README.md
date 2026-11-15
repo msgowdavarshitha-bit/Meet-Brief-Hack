@@ -93,3 +93,9 @@ Executed: 7 frontend tests and 14 Python tests passed. Browser checks confirmed 
 ## Demo after deployment
 
 Test connections in Settings. Create a meeting, inspect its date window, follow actual research counters, inspect briefing evidence and uncertainty labels, download PDF and revisit history. Test bad provider credentials to demonstrate failure rather than false success.
+
+## Screenshot studio
+
+The independent `/screenshot` tool sends a PNG/JPEG/WebP screenshot to AI Gateway through a TanStack server function and returns standalone HTML/CSS. It uses the workspace-allowed `openai/gpt-6.1-terra` Responses model because the default text endpoint is not permitted by this workspace's retention policy. Generated code previews in a sandboxed iframe with scripts, external requests, forms and parent access blocked. Users can copy or download HTML; generated layouts are approximations, not recovered original code or photos. Input/output is not stored in Cloud. AI usage requires workspace credits. This feature never changes Tavily-only research.
+
+The external Flask starter reads process environment variables; placing credentials in a `.env` file alone does not load them. On Windows PowerShell, set `$env:TAVILY_API_KEY`, `$env:MONGODB_URI` and `$env:CORS_ORIGINS` before `python app.py`. On Render, use its environment settings. A local workspace can connect to `http://localhost:5000`; the hosted workspace needs an HTTPS deployment.

@@ -36,3 +36,5 @@ use the editor.
 - Research uses Tavily only; analysis is extractive (verbatim source sentences) with no LLM gateway, so briefings never contain ungrounded generated text.
 - Treat the external Flask service as single-workspace and single-worker until authentication and durable jobs exist; browser CORS is not authorization.
 - Validate external service addresses centrally before every request and save candidate settings only after a valid health response; localhost and workspace URLs are not hosted Flask services.
+- Keep screenshot generation in a separate AI Gateway server function with a workspace-allowed Responses model; it must never feed generated content into research briefings.
+- Render generated HTML only in an opaque sandboxed iframe with restrictive CSP; generated content must not execute scripts or access the workspace or network.
